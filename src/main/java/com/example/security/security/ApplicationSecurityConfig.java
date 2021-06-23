@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.util.concurrent.TimeUnit;
 
@@ -49,8 +50,16 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .defaultSuccessUrl("/courses", true)
                 .and()
                 .rememberMe()// defaults to 2 weeks
-                .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21)) // extend session
-                .key("verysecured");
+                    .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(21)) // extend session
+                    .key("verysecured")
+                .and()
+                .logout()
+//                    .logoutUrl("/logout") // POST 여야함 (csrf가 disable 되지 않은 경우)
+                    .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))  // GET을 사용하고 싶을 시 추가
+                    .clearAuthentication(true)
+                    .invalidateHttpSession(true)
+                    .deleteCookies("JSESSIONID", "remember-me")
+                    .logoutSuccessUrl("/login");
     }
 
     @Override
